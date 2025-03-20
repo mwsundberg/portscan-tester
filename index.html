@@ -88,7 +88,7 @@
             cursor: wait;
         }
         #custom_button:not([disabled]):is(:hover, :active, :focus) {
-            outline: 8px solid var(--foreground);
+            outline: 8px solid oklch(from var(--red) calc(l + 0.1) c h);
             color: var(--foreground);
         }
         #plugin-button {
@@ -124,9 +124,9 @@
         <main>
             <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
             <p>
-                The handy button above will run a port-scan of your local network by triggering HTTP <code>GET</code> requests with
+                The handy button above will run a port-scan of your local network by triggering HTTP <code>GET</code> requests via
                 a hidden image's <code>src</code> attribute. No information will <em>ever</em> be sent to remote servers and the results
-                of the portscan will never leave your computer. You can verify this and fully monitor the scan from the DevTools Network
+                of the port-scan will never leave your computer. You can verify this and fully monitor the scan from the DevTools Network
                 tab or check the list of the local domains scanned below.
             </p>
             <p>
@@ -134,15 +134,15 @@
                 These links can be used to check if the issue is fixed:
                 <ul>
                     <li>Plain link to <a href="http://localhost:8080">http://localhost:8080</a></li>
+                    <li><code>target="_blank"</code> link to <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
                     <li><code>rel="noopener"</code> link to <a href="http://localhost:8080" rel="noopener">http://localhost:8080</a></li>
                     <li><code>rel="noreferrer"</code> link to <a href="http://localhost:8080" rel="noreferrer">http://localhost:8080</a></li>
-                    <li><code>target="_blank"</code> link to <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
                     <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer">http://localhost:8080</a></li>
                 </ul>
             </p>
             <p>
-                To protect against private network portscans like these there are several options:
-                the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed to block private network portscans
+                To protect against private network port-scans like these there are several options:
+                the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed specifically to block private network portscans
                 (I'm a developer for it and think it's pretty neat!). Alternatively, users of <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/">uBlock Origin</a>
                 can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan">"Block Outsider Intrusion into LAN"</a> filter list.
             </p>
