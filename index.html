@@ -5,67 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All in One Port-Scan Test</title>
     <style>
-        main {
-            width: 500px;
+        /* Styles copied from `style-changes` branch of my Port Authority fork */
+        :root {
+            --light: #ffffff;
+            --dark: #23222B;
+            --background: var(--light);
+            --foreground: var(--dark);
+            --red: #800000;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Colors selected to match the settings page's wrapper container styles */
+                --light: #BFBFC9;
+                --dark: #23222B;
+                --background: var(--dark);
+                --foreground: var(--light);
+                --red: #B20000; /* Slightly brighter for better contrast against `--background` */
+            }
+        }
+        body {
+            background-color: color-mix(in oklab, var(--background) 95%, var(--foreground));
+            color: var(--foreground);
+
+            font-family: system-ui, sans-serif;
+            line-height: 1.5;
+
+            box-sizing: border-box;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2em 0;
+            display: flex;
+            align-items: center;
+        }
+        section {
+            width: 80ch;
+
             margin: auto;
-            padding: 20px;
-            padding-top: 10px;
 
-            border: solid black 5px;
-            border-radius: 10px;
+            background-color: var(--background);
+            border: 2px solid color-mix(in oklab, var(--background) 90%, var(--foreground));
 
-            background-color: #da5a5a;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--red);
+            color: var(--background);
 
-            color: white;
-            font-weight: bold;
+            padding: 2em 2ch;
             text-align: center;
+
+            h1 {
+                font-size: 2rem;
+                margin: 0;
+            }
+        }
+        main {
+            padding: 2ch;
+
+            border-bottom-left-radius: var(--wrapper-border-radius);
+            border-bottom-right-radius: var(--wrapper-border-radius);
         }
 
         #custom_button {
-            padding: 6px;
-            background-color: #e7e7e7;
-            font-size: 18px;
+            display: block;
+            margin: 2em auto;
+            padding: 0.5em 2ch;
+            font-size: 1.1em;
+
+            border: none;
+            outline: 5px solid var(--red);
+            border-radius: 50rem;
+
+            background-color: color-mix(in oklab, var(--background) 95%, var(--foreground));
+            color: var(--red);
+
+            cursor: pointer;
+
+            transition: all 0.2s;
+        }
+        #custom_button[disabled] {
+            cursor: wait;
+        }
+        #custom_button:not([disabled]):is(:hover, :active, :focus) {
+            outline: 8px solid var(--foreground);
+            color: var(--foreground);
+        }
+        #plugin-button {
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        code, pre {
+            font-family: ui-monospace, monospace;
+            background-color: color-mix(in oklab, var(--background) 92%, var(--foreground));
+            border: 1px solid color-mix(in oklab, var(--background) 85%, var(--foreground));
+            border-radius: 5px;
+            padding: 0 0.5ch;
+        }
+        pre {
+            padding: 0.6em 2ch;
+            margin: 0;
+        }
+        a {
+            color: oklch(from var(--red) calc(l + 0.2) c h);
+            text-decoration: underline oklch(from var(--red) calc(l + 0.2) c h) 2px;
+        }
+        a:is(:hover, :focus) {
+            color: var(--red);
+            text-decoration-color: var(--red);
         }
     </style>
 </head>
 <body>
-    <main>
-        <h1>All in One Port-Scan Test</h1>
+    <section>
+        <header><h1>All-in-One Port Scan Test</h1></header>
+        <main>
+            <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
+            <p>
+                By clicking the button above, you understand that this is a portscanning test that happens inside your browser and is specifically built to test all the possible ways a site can port scan you in one easy location. 
+                It will also try to reach out to specific domains that are known for distributing privacy-invasive scripts but will not attempt to download these scripts. NO DATA WILL EVER BE LOGGED OR SENT TO ME!
+            </p>
+            <p>
+                Links to local resources can sometimes trigger false positives (see <a href="https://github.com/ACK-J/Port_Authority/issues/51#issuecomment-2739373340">issue #51</a>). Try these below:
+                <ul>
+                    <li>Plain link to <a href="http://localhost:8080">http://localhost:8080</a></li>
+                    <li><code>rel="noopener"</code> link to <a href="http://localhost:8080" rel="noopener">http://localhost:8080</a></li>
+                    <li><code>rel="noreferrer"</code> link to <a href="http://localhost:8080" rel="noreferrer">http://localhost:8080</a></li>
+                    <li><code>target="_blank"</code> link to <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
+                    <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer">http://localhost:8080</a></li>
+                </ul>
+            </p>
+            <a id="plugin-button" href="https://addons.mozilla.org/en-US/firefox/addon/port-authority/">
+                <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="PortAuthority addon for Firefox" height="60px">
+            </a>
+            <p>
+                If you download the Port Authority add-on, your browser will block all malicious port scans and scripts.
+            </p>
+            <h2 id="requestsmade" hidden>
+                Requests Made:
+            </h2>
+            <pre id="results" hidden></pre>
+        </main>
 
-        <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
-        
-        <p>
-            By clicking the button above, you understand that this is a portscanning test that happens inside your browser and is specifically built to test all the possible ways a site can port scan you in one easy location. 
-            It will also try to reach out to specific domains that are known for distributing privacy-invasive scripts but will not attempt to download these scripts. NO DATA WILL EVER BE LOGGED OR SENT TO ME!
-        </p>
-        <a href="https://addons.mozilla.org/en-US/firefox/addon/port-authority/">
-            <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="for Firefox" height="60px" />
-        </a>
-        <p>
-            Links to local resources can sometimes trigger false positives (see <a href="https://github.com/ACK-J/Port_Authority/issues/51#issuecomment-2739373340">issue #51</a>). Try these below:
-            <ul>
-                <li>Plain link to <a href="http://localhost:8080"><code>http://localhost:8080</code></a></li>
-                <li><code>rel="noopener"</code> link to <a href="http://localhost:8080" rel="noopener"><code>http://localhost:8080</code></a></li>
-                <li><code>rel="noreferrer"</code> link to <a href="http://localhost:8080" rel="noreferrer"><code>http://localhost:8080</code></a></li>
-                <li><code>target="_blank"</code> link to <a href="http://localhost:8080" target="_blank"><code>http://localhost:8080</code></a></li>
-                <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer"><code>http://localhost:8080</code></a></li>
-            </ul>
-        </p>
-        <p>
-            If you download the Port Authority add-on, your browser will block all malicious port scans and scripts.
-        </p>
-        <h2 id="requestsmade" hidden>
-            Requests Made
-        </h2>
-        <div id="results" style="padding-top: 10px; font-weight: bold;"></div>
-    </main>
-
-    <div id="testdiv" hidden></div>
+        <div id="testdiv" hidden></div>
+    </section>
 
     <script>
         /* DOM nodes */
         const trigger_portscan_button = document.getElementById("custom_button");
-        const res_div = document.getElementById("results");
+        const res_pre = document.getElementById("results");
         const test_div = document.getElementById("testdiv");
 
         /* The scanner needs these global variables for an ugly hack. */
@@ -92,7 +182,7 @@
                     the global directory so that it can be retrieved. */
                 test_div.innerHTML = '<img src="http://' + host + 
                     '" alt="" onerror="error_handler(' + our_scanobj_index + ');" />';
-                res_div.innerHTML += "http://" + host + "<br />";
+                res_pre.innerHTML += "http://" + host + "<br />";
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -119,7 +209,7 @@
                 test_div.innerHTML = '<img src="https://' + host + 
                     '" alt="" onerror="error_handler(' + our_scanobj_index + ');" />';
 
-                res_div.innerHTML += "https://" + host + "<br />";
+                res_pre.innerHTML += "https://" + host + "<br />";
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -137,7 +227,7 @@
             this.ws = function() {
             return new Promise((resolve, reject) => {
                 var ws = new WebSocket("ws://" + host + '/')
-                res_div.innerHTML += "ws://" + host + "<br />";
+                res_pre.innerHTML += "ws://" + host + "<br />";
                 ws.onerror = function() {
                 // close the socket before we return
                 ws.close()
@@ -148,7 +238,7 @@
             this.wss = function() {
             return new Promise((resolve, reject) => {
                 var ws = new WebSocket("wss://" + host + '/')
-                res_div.innerHTML += "wss://" + host + "<br />";
+                res_pre.innerHTML += "wss://" + host + "<br />";
                 ws.onerror = function() {
                 // close the socket before we return
                 ws.close()
@@ -180,7 +270,8 @@
             trigger_portscan_button.disabled = true;
             document.getElementById("requestsmade").hidden = false;
 
-            res_div.innerText = "";
+            res_pre.innerText = "";
+            res_pre.hidden = false;
 
             for(const item of ips){
                 const [ip, port] = Object.entries(item)[0];
