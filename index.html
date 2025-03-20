@@ -125,11 +125,20 @@
         <main>
             <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
             <p>
-                The handy button above will run a port-scan of your local network by triggering HTTP <code>GET</code> requests via
+                The handy button above will run a port-scan of your local network. It works by triggering HTTP <code>GET</code> requests via
                 a hidden image's <code>src</code> attribute. No information will <em>ever</em> be sent to remote servers and the results
                 of the port-scan will never leave your computer. You can verify this and fully monitor the scan from the DevTools Network
                 tab or check the list of the local domains scanned below.
             </p>
+            <p>
+                To protect against private network port-scans like these there are several options:
+                the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed specifically to block private network port-scans
+                (I'm a developer for it and think it's pretty neat!). Alternatively, <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/">uBlock Origin</a> users
+                can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan">"Block Outsider Intrusion into LAN"</a> filter list.
+            </p>
+            <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
+                <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Port Authority addon for Firefox" height="60px">
+            </a>
             <p>
                 Links to local resources currently trigger false positives in the Port Authority addon (see <a href="https://github.com/ACK-J/Port_Authority/issues/57">Issue #57</a>).
                 These links can be used to check if the issue is fixed:
@@ -141,15 +150,6 @@
                     <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer">http://localhost:8080</a></li>
                 </ul>
             </p>
-            <p>
-                To protect against private network port-scans like these there are several options:
-                the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed specifically to block private network port-scans
-                (I'm a developer for it and think it's pretty neat!). Alternatively, users of <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/">uBlock Origin</a>
-                can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan">"Block Outsider Intrusion into LAN"</a> filter list.
-            </p>
-            <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
-                <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Port Authority addon for Firefox" height="60px">
-            </a>
             <h2 id="results-label" hidden>
                 Requests Made:
             </h2>
@@ -188,8 +188,8 @@
                 /* Create the div to load the image, passing our object's index into
                     the global directory so that it can be retrieved. */
                 test_div.innerHTML = '<img src="http://' + host + 
-                    '" alt="" onerror="error_handler(' + our_scanobj_index + ');" />';
-                res_pre.innerHTML += "http://" + host + "<br />";
+                    '" onerror="error_handler(' + our_scanobj_index + ');">';
+                res_pre.innerHTML += "http://" + host + "\n";
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -214,9 +214,9 @@
                 /* Create the div to load the image, passing our object's index into
                     the global directory so that it can be retrieved. */
                 test_div.innerHTML = '<img src="https://' + host + 
-                    '" alt="" onerror="error_handler(' + our_scanobj_index + ');" />';
+                    '" onerror="error_handler(' + our_scanobj_index + ');">';
 
-                res_pre.innerHTML += "https://" + host + "<br />";
+                res_pre.innerHTML += "https://" + host + "\n";
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -234,7 +234,7 @@
             this.ws = function() {
             return new Promise((resolve, reject) => {
                 var ws = new WebSocket("ws://" + host + '/')
-                res_pre.innerHTML += "ws://" + host + "<br />";
+                res_pre.innerHTML += "ws://" + host + "\n";
                 ws.onerror = function() {
                 // close the socket before we return
                 ws.close()
@@ -245,7 +245,7 @@
             this.wss = function() {
             return new Promise((resolve, reject) => {
                 var ws = new WebSocket("wss://" + host + '/')
-                res_pre.innerHTML += "wss://" + host + "<br />";
+                res_pre.innerHTML += "wss://" + host + "\n";
                 ws.onerror = function() {
                 // close the socket before we return
                 ws.close()
