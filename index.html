@@ -126,21 +126,21 @@
             <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
             <p>
                 The handy button above will run a port-scan of your local network. It works by triggering HTTP <code>GET</code> requests via
-                a hidden image's <code>src</code> attribute. No information will <em>ever</em> be sent to remote servers and the results
-                of the port-scan will never leave your computer. You can verify this and fully monitor the scan from the DevTools Network
-                tab or check the list of the local domains scanned below.
+                a hidden image's <code>src</code> attribute. The port-scan results will <em>never</em> be uploaded to remote servers and will
+                never leave your computer. You can verify this and fully monitor the scan from the <a href="https://firefox-source-docs.mozilla.org/devtools-user/network_monitor/index.html" target="_blank">DevTools Network tab</a>,
+                or check on the list of the local domains scanned below.
             </p>
             <p>
                 To protect against private network port-scans like these there are several options:
                 the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed specifically to block private network port-scans
-                (I'm a developer for it and think it's pretty neat!). Alternatively, <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/">uBlock Origin</a> users
-                can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan">"Block Outsider Intrusion into LAN"</a> filter list.
+                (I'm a developer for it and think it's pretty neat!). Alternatively, <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/" target="_blank">uBlock Origin</a> users
+                can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan" target="_blank">"Block Outsider Intrusion into LAN"</a> filter list.
             </p>
             <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
                 <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Port Authority addon for Firefox" height="60px">
             </a>
             <p>
-                Links to local resources currently trigger false positives in the Port Authority addon (see <a href="https://github.com/ACK-J/Port_Authority/issues/57">Issue #57</a>).
+                Links to local resources currently trigger false positives in the Port Authority addon (see <a href="https://github.com/ACK-J/Port_Authority/issues/57" target="_blank">Issue #57</a>).
                 These links can be used to check if the issue is fixed:
                 <ul>
                     <li>Plain link to <a href="http://localhost:8080">http://localhost:8080</a></li>
