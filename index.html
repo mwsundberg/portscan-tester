@@ -124,11 +124,14 @@
         <main>
             <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
             <p>
-                By clicking the button above, you understand that this is a portscanning test that happens inside your browser and is specifically built to test all the possible ways a site can port scan you in one easy location. 
-                It will also try to reach out to specific domains that are known for distributing privacy-invasive scripts but will not attempt to download these scripts. NO DATA WILL EVER BE LOGGED OR SENT TO ME!
+                The handy button above will run a port-scan of your local network by triggering HTTP <code>GET</code> requests with
+                a hidden image's <code>src</code> attribute. No information will <em>ever</em> be sent to remote servers and the results
+                of the portscan will never leave your computer. You can verify this and fully monitor the scan from the DevTools Network
+                tab or check the list of the local domains scanned below.
             </p>
             <p>
-                Links to local resources can sometimes trigger false positives (see <a href="https://github.com/ACK-J/Port_Authority/issues/51#issuecomment-2739373340">issue #51</a>). Try these below:
+                Links to local resources currently trigger false positives in the Port Authority addon (see <a href="https://github.com/ACK-J/Port_Authority/issues/57">Issue #57</a>).
+                These links can be used to check if the issue is fixed:
                 <ul>
                     <li>Plain link to <a href="http://localhost:8080">http://localhost:8080</a></li>
                     <li><code>rel="noopener"</code> link to <a href="http://localhost:8080" rel="noopener">http://localhost:8080</a></li>
@@ -137,13 +140,16 @@
                     <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer">http://localhost:8080</a></li>
                 </ul>
             </p>
-            <a id="plugin-button" href="https://addons.mozilla.org/en-US/firefox/addon/port-authority/">
-                <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="PortAuthority addon for Firefox" height="60px">
-            </a>
             <p>
-                If you download the Port Authority add-on, your browser will block all malicious port scans and scripts.
+                To protect against private network portscans like these there are several options:
+                the <a href="https://addons.mozilla.org/firefox/addon/port-authority/">Port Authority browser addon</a> is designed to block private network portscans
+                (I'm a developer for it and think it's pretty neat!). Alternatively, users of <a href="https://addons.mozilla.org/firefox/addon/ublock-origin/">uBlock Origin</a>
+                can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan">"Block Outsider Intrusion into LAN"</a> filter list.
             </p>
-            <h2 id="requestsmade" hidden>
+            <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
+                <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Port Authority addon for Firefox" height="60px">
+            </a>
+            <h2 id="results-label" hidden>
                 Requests Made:
             </h2>
             <pre id="results" hidden></pre>
@@ -265,10 +271,9 @@
         function custom_scan()
         {
             const ips = [{"127.0.0.1": 80}, {"127.0.0.1": 65535}, {"0.0.0.0": 80}, {"localhost.": 80}, {"localhost.": 8080}, {"localhost": 8080}, {"localhost": 8081}, {"localhost": 8082}, {"localhost": 8083}, {"localhost": 8084}, {"localhost": 8085}, {"LoCALhOst": 443}, {"10.0.0.1": 455}, {"10.255.22.33": 80}, {"192.168.1.1": 443}, {"192.168.1.255":6463}, {"172.17.100.155": 4444}, {"172.31.255.255": 8081}, {"172.031.33.33": 445}, {"169.254.1.0": 547}, {"169.254.1.0": 21}, {"169.254.1.0": 194}];
-            const scripts = ["fp.disney.go.com", "h.chase.co.uk", "analytics.vacations.united.com", "tmx.bestbuy.com", "thm12.visa.com", "tmetrix.my.chick-fil-a.com", "cfa.fidelity.com", "content22.citibank.com", "deviceauth.dmv.ca.gov", "dfp.t-mobile.at", "src.ebay-us.com", "fp.disney.go.com", "fp.ups.com"];
 
             trigger_portscan_button.disabled = true;
-            document.getElementById("requestsmade").hidden = false;
+            document.getElementById("results-label").hidden = false;
 
             res_pre.innerText = "";
             res_pre.hidden = false;
@@ -281,11 +286,6 @@
                 scanner.runHTTPS();
                 scanner.ws();
                 scanner.wss();
-            }
-
-            for(const host of scripts){
-                const scanner = new PortScanner(host, 443);
-                scanner.runHTTPS();
             }
             
             trigger_portscan_button.disabled = false;
