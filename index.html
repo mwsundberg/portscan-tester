@@ -42,6 +42,16 @@
             <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="for Firefox" height="60px" />
         </a>
         <p>
+            Links to local resources can sometimes trigger false positives (see <a href="https://github.com/ACK-J/Port_Authority/issues/51#issuecomment-2739373340">issue #51</a>). Try these below:
+            <ul>
+                <li>Plain link to <a href="http://localhost:8080"><code>http://localhost:8080</code></a></li>
+                <li><code>rel="noopener"</code> link to <a href="http://localhost:8080" rel="noopener"><code>http://localhost:8080</code></a></li>
+                <li><code>rel="noreferrer"</code> link to <a href="http://localhost:8080" rel="noreferrer"><code>http://localhost:8080</code></a></li>
+                <li><code>target="_blank"</code> link to <a href="http://localhost:8080" target="_blank"><code>http://localhost:8080</code></a></li>
+                <li><code>referrerpolicy="no-referrer"</code> link to <a href="http://localhost:8080" referrerpolicy="no-referrer"><code>http://localhost:8080</code></a></li>
+            </ul>
+        </p>
+        <p>
             If you download the Port Authority add-on, your browser will block all malicious port scans and scripts.
         </p>
         <h2 id="requestsmade" hidden>
