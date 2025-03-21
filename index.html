@@ -166,8 +166,8 @@
         const test_div = document.getElementById("testdiv");
 
         /* The scanner needs these global variables for an ugly hack. */
-        var last_scanobj_index = 0;
-        var scanobjs = {};
+        let last_scanobj_index = 0;
+        const scanobjs = {};
         function PortScanner(ip, port)
         {
             // Verify port format
@@ -178,18 +178,17 @@
             this.host = host;
             this.total_time = null;
 
-            this.runHTTP = function () {
-
+            const _runImgSrc = function (protocol) {
                 /* Save this object in the global directory (UGLY HACK). */
-                var our_scanobj_index = last_scanobj_index;
+                const our_scanobj_index = last_scanobj_index;
                 last_scanobj_index++;
                 scanobjs[our_scanobj_index] = this;
 
                 /* Create the div to load the image, passing our object's index into
                     the global directory so that it can be retrieved. */
-                test_div.innerHTML = '<img src="http://' + host + 
+                test_div.innerHTML = '<img src="' + protocol + host + 
                     '" onerror="error_handler(' + our_scanobj_index + ');">';
-                res_pre.innerHTML += "http://" + host + "\n";
+                res_pre.innerText += protocol + host + "\n";
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -202,55 +201,31 @@
                     },
                     10000
                 );
+            }
+            this.runHTTP = function () {
+                _runImgSrc("http://");
             }
 
             this.runHTTPS = function () {
-
-                /* Save this object in the global directory (UGLY HACK). */
-                var our_scanobj_index = last_scanobj_index;
-                last_scanobj_index++;
-                scanobjs[our_scanobj_index] = this;
-
-                /* Create the div to load the image, passing our object's index into
-                    the global directory so that it can be retrieved. */
-                test_div.innerHTML = '<img src="https://' + host + 
-                    '" onerror="error_handler(' + our_scanobj_index + ');">';
-
-                res_pre.innerHTML += "https://" + host + "\n";
-
-                // XXX: What's the right way to do this in JS?
-                var thiss = this;
-                setTimeout(
-                    function () {
-                        /* This will be non-null if the event hasn't fired yet. */
-                        if (scanobjs[our_scanobj_index]) {
-                            scanobjs[our_scanobj_index] = null;
-                        }
-                    },
-                    10000
-                );
+                _runImgSrc("https://");
             }
 
-            this.ws = function() {
+            const _ws = function(protocol) {
             return new Promise((resolve, reject) => {
-                var ws = new WebSocket("ws://" + host + '/')
-                res_pre.innerHTML += "ws://" + host + "\n";
+                const ws = new WebSocket(protocol + host + '/')
+                res_pre.innerText += protocol + host + "\n";
                 ws.onerror = function() {
                 // close the socket before we return
                 ws.close()
                 }
-            })
+            });
+            }
+            this.ws = function() {
+                _ws("ws://");
             }
 
             this.wss = function() {
-            return new Promise((resolve, reject) => {
-                var ws = new WebSocket("wss://" + host + '/')
-                res_pre.innerHTML += "wss://" + host + "\n";
-                ws.onerror = function() {
-                // close the socket before we return
-                ws.close()
-                }
-            })
+                _ws("wss://");
             }
         }
 
@@ -259,7 +234,7 @@
         function error_handler(index)
         {
             /* Get the PortScanner object back. */
-            var thiss = scanobjs[index];
+            const thiss = scanobjs[index];
 
             /* If it's null, the scan timed out. */
             if (thiss == null) {
