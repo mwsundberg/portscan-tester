@@ -170,12 +170,16 @@
         const scanobjs = {};
         function PortScanner(ip, port)
         {
-            // Verify port format
-            if (isNaN(port) || port <= 0 || port > 65535) {
-                alert("Bad port number");
+            // Verify port is in range
+            if (!port || port <= 0 || port > 65535) {
+                console.warn("Invalid port number passed, omitting:", {ip, port});
+                this.host = ip;
+            } else {
+                this.host = ip + ":" + port;
             }
-            const host = ip + ":" + port;
-            this.host = host;
+            // Need to have a standard variable to be accessible from methods
+            // TODO convert PortScanner to a class, or otherwise improve the OOP syntax used
+            const host = this.host;
             this.total_time = null;
 
             const _runImgSrc = function (protocol) {
@@ -216,7 +220,7 @@
 
             const _ws = function(protocol) {
             return new Promise((resolve, reject) => {
-                const ws = new WebSocket(protocol + host + '/')
+                const ws = new WebSocket(protocol + host + '/');
                 res_pre.innerText += protocol + host + "\n";
                 ws.onerror = function() {
                 // close the socket before we return
