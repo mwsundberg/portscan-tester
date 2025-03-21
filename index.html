@@ -184,10 +184,14 @@
                 last_scanobj_index++;
                 scanobjs[our_scanobj_index] = this;
 
-                /* Create the div to load the image, passing our object's index into
-                    the global directory so that it can be retrieved. */
-                test_div.innerHTML = '<img src="' + protocol + host + 
-                    '" onerror="error_handler(' + our_scanobj_index + ');">';
+                /* Inject an image tag into the page that triggers the GET request that is the port-scan and catches when it fails to load */
+                const injected_image = document.createElement("img");
+                injected_image.setAttribute("src", protocol + host);
+                injected_image.addEventListener("error", (event) => {
+                    error_handler(our_scanobj_index);
+                });
+                // TODO Reevaluate: Current behavior clears all previous contents, pretty sure this defeats the purpose of setting up the listener
+                test_div.replaceChildren(injected_image);
                 res_pre.innerText += protocol + host + "\n";
 
                 // XXX: What's the right way to do this in JS?
