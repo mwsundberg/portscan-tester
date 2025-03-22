@@ -123,7 +123,7 @@
     <section>
         <header><h1>All-in-One Port Scan Test</h1></header>
         <main>
-            <button id="custom_button" onclick="custom_scan();">Port Scan My Internal Network!</button>
+            <button id="custom_button">Port Scan My Internal Network!</button>
             <p>
                 The handy button above will run a port-scan of your local network. It works by triggering HTTP <code>GET</code> requests via
                 a hidden image's <code>src</code> attribute. The port-scan results will <em>never</em> be uploaded to remote servers and will
@@ -165,6 +165,10 @@
         const res_pre = document.getElementById("results");
         const test_div = document.getElementById("testdiv");
 
+        /* DOM functionality binding */
+        trigger_portscan_button.addEventListener("click", custom_scan);
+        const log_portscan = (url) => res_pre.append(url + "\n");
+
         /* The scanner needs these global variables for an ugly hack. */
         let last_scanobj_index = 0;
         const scanobjs = {};
@@ -196,7 +200,8 @@
                 });
                 // TODO Reevaluate: Current behavior clears all previous contents, pretty sure this defeats the purpose of setting up the listener
                 test_div.replaceChildren(injected_image);
-                res_pre.innerText += protocol + host + "\n";
+
+                log_portscan(protocol + host);
 
                 // XXX: What's the right way to do this in JS?
                 var thiss = this;
@@ -221,10 +226,10 @@
             const _ws = function(protocol) {
             return new Promise((resolve, reject) => {
                 const ws = new WebSocket(protocol + host + '/');
-                res_pre.innerText += protocol + host + "\n";
+                log_portscan(protocol + host);
                 ws.onerror = function() {
-                // close the socket before we return
-                ws.close()
+                    // close the socket before we return
+                    ws.close();
                 }
             });
             }
