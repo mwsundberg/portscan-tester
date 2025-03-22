@@ -152,7 +152,7 @@
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
                 </p>
                 <p>
-                    You can also pick a specific ip and port to port-scan by setting <code>ip=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
+                    You can also pick a specific host and port to port-scan by setting <code>host=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
                 </p>
             </div>
             <button id="trigger-button">Port Scan My Internal Network!</button>
@@ -202,12 +202,12 @@
         const log_portscan = (url) => results_container.append(url + "\n");
 
         class PortScanner {
-            constructor(ip, port) {
-                this.ip = ip;
+            constructor(host, port) {
+                this.host = host;
 
                 /* Verify port is in range */
                 if (!port || port <= 0 || port > 65535) {
-                    console.warn("Invalid or missing port number passed, omitting:", {ip, port});
+                    console.warn("Invalid or missing port number passed, omitting:", {host, port});
                     this.port = undefined;
                 } else {
                     this.port = port;
@@ -218,9 +218,9 @@
             }
 
             /* Factored out code that's used in both websocket and http based scans */
-            static _portScanTemplater({protocol, ip, port}, setup, timeout = 10_000 /* 10 seconds */) {
+            static _portScanTemplater({protocol, host, port}, setup, timeout = 10_000 /* 10 seconds */) {
                 /* Assemble the URL to use */
-                const url = `${protocol}://${ip}` + (port? `:${port}` : "");
+                const url = `${protocol}://${host}` + (port? `:${port}` : "");
 
                 /* Run the portscan itself, saving the returned cleanup function and event emitter that listeners are bound to */
                 const {event_emitter, cleanup} = setup(url);
@@ -249,8 +249,8 @@
                 log_portscan(url);
             }
 
-            static runImagePortscan({protocol = "http", ip, port}) {
-                this._portScanTemplater({protocol, ip, port}, (url)=>{
+            static runImagePortscan({protocol = "http", host, port}) {
+                this._portScanTemplater({protocol, host, port}, (url)=>{
                     /* Inject an image tag into the page that triggers the GET request */
                     const injected_image = document.createElement("img");
                     injected_image.setAttribute("src", url);
@@ -264,8 +264,8 @@
                 });
             }
 
-            static runWebsocketPortscan({protocol = "ws", ip, port}) {
-                this._portScanTemplater({protocol, ip, port}, (url)=>{
+            static runWebsocketPortscan({protocol = "ws", host, port}) {
+                this._portScanTemplater({protocol, host, port}, (url)=>{
                     /* Start the port-scan by making a new WebSocket object */
                     const socket = new WebSocket(url + "/");
                     
@@ -281,28 +281,28 @@
             async runHTTP() {
                 PortScanner.runImagePortscan({
                     protocol: "http",
-                    ip: this.ip,
+                    host: this.host,
                     port: this.port
                 });
             }
             async runHTTPS() {
                 PortScanner.runImagePortscan({
                     protocol: "https",
-                    ip: this.ip,
+                    host: this.host,
                     port: this.port
                 });
             }
             async runWS() {
                 PortScanner.runWebsocketPortscan({
                     protocol: "ws",
-                    ip: this.ip,
+                    host: this.host,
                     port: this.port
                 });
             }
             async runWSS() {
                 PortScanner.runWebsocketPortscan({
                     protocol: "wss",
-                    ip: this.ip,
+                    host: this.host,
                     port: this.port
                 });
             }
@@ -321,20 +321,20 @@
             autoscan_warning.hidden = false;
 
             /* Read the config options and update the UI with the scan target */
-            const ip = this_page.searchParams.get("ip") ?? "localhost";
+            const host = this_page.searchParams.get("host") ?? "localhost";
             const port = this_page.searchParams.get("port") ?? "8080";
-            autoscan_ws_address.innerText = `ws://${ip}:${port}`;
-            autoscan_http_address.innerText = `http://${ip}:${port}`;
+            autoscan_ws_address.innerText = `ws://${host}:${port}`;
+            autoscan_http_address.innerText = `http://${host}:${port}`;
 
             /* Clear the autoscan options from the search params to make the disable link */
             this_page.searchParams.delete("autoscan");
-            this_page.searchParams.delete("ip");
+            this_page.searchParams.delete("host");
             this_page.searchParams.delete("port");
             autoscan_disable_link.href = this_page;
 
             /* Run the portscan */
             console.log("Running a single HTTP and WS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
-            const scanner = new PortScanner(ip, port);
+            const scanner = new PortScanner(host, port);
             scanner.runHTTP();
             scanner.runWS();
         }
@@ -351,8 +351,8 @@
             results_container.hidden = false;
 
             for(const target of targets){
-                const [ip, port] = Object.entries(target)[0];
-                const scanner = new PortScanner(ip, port);
+                const [host, port] = Object.entries(target)[0];
+                const scanner = new PortScanner(host, port);
 
                 scanner.runHTTP();
                 scanner.runHTTPS();
