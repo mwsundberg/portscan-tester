@@ -215,92 +215,90 @@
                 this.total_time = null;
             }
 
-            static _runImgSrc({protocol, ip, port}) {
+            /* Factored out code that's used in both websocket and http based scans */
+            static _portScanTemplater({protocol, ip, port}, setup, timeout = 10_000 /* 10 seconds */) {
                 /* Assemble the URL to use */
                 const url = `${protocol}://${ip}` + (port? `:${port}` : "");
 
-                /* Inject an image tag into the page that triggers the GET request that is the port-scan and catches when it fails to load */
-                const injected_image = document.createElement("img");
-                injected_image.setAttribute("src", url);
-                test_div.append(injected_image);
+                /* Run the portscan itself, saving the returned cleanup function and event emitter that listeners are bound to */
+                const {event_emitter, cleanup} = setup(url);
 
-                /* Early declaration needed since used in `cleanup` yet need `cleanup` defined before `setTimeout`, which sets the `timeout_id` */
+                /* Early declaration needed since used in `cleanup` yet need `cleanup` defined before `setTimeout`, which populates the `timeout_id` */
                 let timeout_id = undefined;
 
                 /* Function to run after either a set timeout or the GET request errors */
-                const cleanup = (event) => {
-                    console.log("Cleaning up port-scan img for: " + url);
+                const cleanup_wrapper = (event) => {
+                    console.log("Cleaning up port-scan for: " + url, event);
 
                     /* Clean up the event listener and timer, since could be triggered by either */
-                    injected_image.removeEventListener("error", cleanup);
+                    event_emitter.removeEventListener("error", cleanup_wrapper);
                     clearTimeout(timeout_id);
 
-                    /* Remove the DOM element */
-                    test_div.removeChild(injected_image);
+                    /* Run the provided cleanup code */
+                    cleanup();
                 };
 
-                /* Attach the cleanup to a fallback timeout the image's `onerror`. Timeout must be set first in case the error triggers before `timeout_id` is updated */
-                timeout_id = setTimeout(cleanup, 10_000); /* 10 seconds */
-                injected_image.addEventListener("error", cleanup);
+                /* Attach the cleanup to a fallback timeout and the error source.
+                   Timeout is set first in case the error triggers before `timeout_id` is updated */
+                timeout_id = setTimeout(cleanup_wrapper, timeout);
+                event_emitter.addEventListener("error", cleanup_wrapper);
 
                 /* Log the portscan as being attempted, currently not tracking if it succeeds */
                 log_portscan(url);
             }
 
-            static async _ws({protocol, ip, port}) {
-                /* Assemble the URL to scan */
-                const url = `${protocol}://${ip}` + (port? `:${port}` : "");
+            static runImagePortscan({protocol = "http", ip, port}) {
+                this._portScanTemplater({protocol, ip, port}, (url)=>{
+                    /* Inject an image tag into the page that triggers the GET request */
+                    const injected_image = document.createElement("img");
+                    injected_image.setAttribute("src", url);
+                    test_div.append(injected_image);
 
-                /* Start the port-scan by making a new WebSocket object */
-                const socket = new WebSocket(url + "/");
-
-                /* Early declaration needed since used in `cleanup` yet need `cleanup` defined before `setTimeout`, which sets the `timeout_id` */
-                let timeout_id = undefined;
-
-                /* Function to run after either a set timeout or the GET request errors */
-                const cleanup = (event) => {
-                    console.log("Cleaning up port-scan WebSocket for: " + url, event);
-
-                    /* Clean up the event listener and timer, since could be triggered by either */
-                    socket.removeEventListener("error", cleanup);
-                    clearTimeout(timeout_id);
-
-                    /* Close the websocket */
-                    socket.close();
-                };
-
-                /* Attach the cleanup to a fallback timeout the socket's `onerror`. Timeout must be set first in case the error triggers before `timeout_id` is updated */
-                timeout_id = setTimeout(cleanup, 10_000); /* 10 seconds */
-                socket.addEventListener("error", cleanup);
-
-                /* Log the portscan as being attempted, currently not tracking if it succeeds */
-                log_portscan(url);
+                    /* Return the event emitter and cleanup function */
+                    return {
+                        event_emitter: injected_image,
+                        cleanup: ()=>test_div.removeChild(injected_image)
+                    };
+                });
             }
 
-            /* Instance methods that call the full functions */
-            runHTTP() {
-                PortScanner._runImgSrc({
+            static runWebsocketPortscan({protocol = "ws", ip, port}) {
+                this._portScanTemplater({protocol, ip, port}, (url)=>{
+                    /* Start the port-scan by making a new WebSocket object */
+                    const socket = new WebSocket(url + "/");
+                    
+                    /* Return the event emitter and cleanup function */
+                    return {
+                        event_emitter: socket,
+                        cleanup: ()=>socket.close()
+                    };
+                });
+            }
+
+            /* Instance methods for specific protocol types */
+            async runHTTP() {
+                PortScanner.runImagePortscan({
                     protocol: "http",
                     ip: this.ip,
                     port: this.port
                 });
             }
-            runHTTPS() {
-                PortScanner._runImgSrc({
+            async runHTTPS() {
+                PortScanner.runImagePortscan({
                     protocol: "https",
                     ip: this.ip,
                     port: this.port
                 });
             }
-            runWS() {
-                PortScanner._ws({
+            async runWS() {
+                PortScanner.runWebsocketPortscan({
                     protocol: "ws",
                     ip: this.ip,
                     port: this.port
                 });
             }
-            runWSS() {
-                PortScanner._ws({
+            async runWSS() {
+                PortScanner.runWebsocketPortscan({
                     protocol: "wss",
                     ip: this.ip,
                     port: this.port
