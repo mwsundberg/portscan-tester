@@ -146,10 +146,13 @@
             <div id="autoscan-warning" hidden>
                 <h2>Auto-scan mode is enabled <a id="autoscan-disable-link">(disable)</a></h2> <!--link url dynamically populated-->
                 <p>
-                    Two scans are automatically run on each page load,
-                        a WebSocket based scan targetting <code id="autoscan-ws-address"><!--Dynamically Populated--></code> and
+                    Two scans are automatically run on page load,
+                        a WebSocket scan targetting <code id="autoscan-ws-address"><!--Dynamically Populated--></code> and
                         a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
+                </p>
+                <p>
+                    You can also pick a specific ip and port to port-scan by setting <code>ip=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
                 </p>
             </div>
             <button id="trigger-button">Port Scan My Internal Network!</button>
@@ -184,10 +187,9 @@
             </h2>
             <pre id="results" hidden></pre>
         </main>
-
-        <div id="testdiv" hidden></div>
     </section>
 
+    <div id="testdiv" hidden></div>
     <script>
         /* DOM nodes */
         const trigger_portscan_button = document.getElementById("trigger-button");
@@ -309,15 +311,17 @@
         /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
         const this_page = new URL(window.location);
         if(this_page.searchParams.get("autoscan") !== null) {
+            /* Autoscan DOM elements */
             const autoscan_warning = document.getElementById("autoscan-warning");
             const autoscan_disable_link = document.getElementById("autoscan-disable-link");
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
 
+            /* Show the warning that an automatic scan is going on */
             autoscan_warning.hidden = false;
 
             /* Read the config options and update the UI with the scan target */
-            const ip = this_page.searchParams.get("ip") ?? "127.0.0.1";
+            const ip = this_page.searchParams.get("ip") ?? "localhost";
             const port = this_page.searchParams.get("port") ?? "8080";
             autoscan_ws_address.innerText = `ws://${ip}:${port}`;
             autoscan_http_address.innerText = `http://${ip}:${port}`;
@@ -328,6 +332,7 @@
             this_page.searchParams.delete("port");
             autoscan_disable_link.href = this_page;
 
+            /* Run the portscan */
             console.log("Running a single HTTP and WS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
             const scanner = new PortScanner(ip, port);
             scanner.runHTTP();
@@ -336,7 +341,7 @@
 
         function custom_scan()
         {
-            const ips = [{"127.0.0.1": 80}, {"127.0.0.1": 65535}, {"0.0.0.0": 80}, {"localhost.": 80}, {"localhost.": 8080}, {"localhost": 8080}, {"localhost": 8081}, {"localhost": 8082}, {"localhost": 8083}, {"localhost": 8084}, {"localhost": 8085}, {"LoCALhOst": 443}, {"10.0.0.1": 455}, {"10.255.22.33": 80}, {"192.168.1.1": 443}, {"192.168.1.255":6463}, {"172.17.100.155": 4444}, {"172.31.255.255": 8081}, {"172.031.33.33": 445}, {"169.254.1.0": 547}, {"169.254.1.0": 21}, {"169.254.1.0": 194}];
+            const targets = [{"127.0.0.1": 80}, {"127.0.0.1": 65535}, {"0.0.0.0": 80}, {"localhost.": 80}, {"localhost.": 8080}, {"localhost": 8080}, {"localhost": 8081}, {"localhost": 8082}, {"localhost": 8083}, {"localhost": 8084}, {"localhost": 8085}, {"LoCALhOst": 443}, {"10.0.0.1": 455}, {"10.255.22.33": 80}, {"192.168.1.1": 443}, {"192.168.1.255":6463}, {"172.17.100.155": 4444}, {"172.31.255.255": 8081}, {"172.031.33.33": 445}, {"169.254.1.0": 547}, {"169.254.1.0": 21}, {"169.254.1.0": 194}];
 
             trigger_portscan_button.blur();
             trigger_portscan_button.disabled = true;
@@ -345,8 +350,8 @@
             results_container.innerText = "";
             results_container.hidden = false;
 
-            for(const item of ips){
-                const [ip, port] = Object.entries(item)[0];
+            for(const target of targets){
+                const [ip, port] = Object.entries(target)[0];
                 const scanner = new PortScanner(ip, port);
 
                 scanner.runHTTP();
