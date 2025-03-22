@@ -72,13 +72,17 @@
         #autoscan-warning {
             padding: 0 2ch;
 
-            border: 2px double oklch(from var(--red) l c h / 0.75);
+            border: 2px dashed var(--red);
             border-radius: 20px;
 
             background-color: oklch(from var(--red) l c h / 0.1);
 
             h2 {
                 margin-top: 0.5rem;
+
+                a {
+                    text-decoration: none;
+                }
             }
         }
 
@@ -140,9 +144,9 @@
         <header><h1>All-in-One Port Scan Test</h1></header>
         <main>
             <div id="autoscan-warning" hidden>
-                <h2>Auto-scan mode is enabled</h2>
+                <h2>Auto-scan mode is enabled <a id="autoscan-disable-link">(disable)</a></h2> <!--link url dynamically populated-->
                 <p>
-                    Two scans are run automatically on each page load,
+                    Two scans are automatically run on each page load,
                         a WebSocket based scan targetting <code id="autoscan-ws-address"><!--Dynamically Populated--></code> and
                         a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
@@ -305,17 +309,29 @@
         }
 
         /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
-        if(window.location.search.match(/(^\?|\b&)autoscan\b/)) {
+        const this_page = new URL(window.location);
+        if(this_page.searchParams.get("autoscan") !== null) {
             const autoscan_warning = document.getElementById("autoscan-warning");
+            const autoscan_disable_link = document.getElementById("autoscan-disable-link");
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
 
             autoscan_warning.hidden = false;
-            autoscan_ws_address.innerText = "ws://127.0.0.1:8080";
-            autoscan_http_address.innerText = "http://127.0.0.1:8080";
+
+            /* Read the config options and update the UI with the scan target */
+            const ip = this_page.searchParams.get("ip") ?? "127.0.0.1";
+            const port = this_page.searchParams.get("port") ?? "8080";
+            autoscan_ws_address.innerText = `ws://${ip}:${port}`;
+            autoscan_http_address.innerText = `http://${ip}:${port}`;
+
+            /* Clear the autoscan options from the search params to make the disable link */
+            this_page.searchParams.delete("autoscan");
+            this_page.searchParams.delete("ip");
+            this_page.searchParams.delete("port");
+            autoscan_disable_link.href = this_page;
 
             console.log("Running a single HTTP and WS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
-            const scanner = new PortScanner("127.0.0.1", 8080);
+            const scanner = new PortScanner(ip, port);
             scanner.runHTTP();
             scanner.runWS();
         }
