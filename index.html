@@ -63,11 +63,26 @@
         }
         main {
             padding: 2ch;
-            padding-top: 0;
             overflow: auto;
         }
+        /* The trigger button's margin clashes with the padding, so when it's the first effective child, disable the padding at top */
+        main:has(#autoscan-warning[hidden]) {
+            padding-top: 0;
+        }
+        #autoscan-warning {
+            padding: 0 2ch;
 
-        #custom_button {
+            border: 2px double oklch(from var(--red) l c h / 0.75);
+            border-radius: 20px;
+
+            background-color: oklch(from var(--red) l c h / 0.1);
+
+            h2 {
+                margin-top: 0.5rem;
+            }
+        }
+
+        #trigger-button {
             display: block;
             margin: 2em auto;
             padding: 0.5em 2ch;
@@ -85,10 +100,10 @@
             transition: outline .2s,
                         color .4s;
         }
-        #custom_button[disabled] {
+        #trigger-button[disabled] {
             cursor: wait;
         }
-        #custom_button:not([disabled]):is(:hover, :active, :focus) {
+        #trigger-button:not([disabled]):is(:hover, :active, :focus) {
             outline: 8px solid oklch(from var(--red) calc(l + 0.1) c h);
             color: var(--foreground);
         }
@@ -124,7 +139,16 @@
     <section>
         <header><h1>All-in-One Port Scan Test</h1></header>
         <main>
-            <button id="custom_button">Port Scan My Internal Network!</button>
+            <div id="autoscan-warning" hidden>
+                <h2>Auto-scan mode is enabled</h2>
+                <p>
+                    Two scans are run automatically on each page load,
+                        a WebSocket based scan targetting <code id="autoscan-ws-address"><!--Dynamically Populated--></code> and
+                        a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
+                    This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
+                </p>
+            </div>
+            <button id="trigger-button">Port Scan My Internal Network!</button>
             <p>
                 The handy button above will run a port-scan of your local network. It works by triggering HTTP <code>GET</code> requests via
                 a hidden image's <code>src</code> attribute. The port-scan results will <em>never</em> be uploaded to remote servers and will
@@ -162,7 +186,7 @@
 
     <script>
         /* DOM nodes */
-        const trigger_portscan_button = document.getElementById("custom_button");
+        const trigger_portscan_button = document.getElementById("trigger-button");
         const results_label = document.getElementById("results-label");
         const results_container = document.getElementById("results");
         const test_div = document.getElementById("testdiv");
@@ -185,7 +209,7 @@
 
                 /* Unused */
                 this.total_time = null;
-            }            
+            }
 
             static _runImgSrc({protocol, ip, port}) {
                 /* Assemble the URL to use */
@@ -280,12 +304,20 @@
             }
         }
 
-        /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the query parameters) */
-        if(window.location.search.match(/(^|\b)[&?]autoscan\b/)) {
-            console.log("Running a single HTTPS and WSS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
-            const scanner = new PortScanner("127.0.0.1");
-            scanner.runHTTPS();
-            scanner.runWSS();
+        /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
+        if(window.location.search.match(/(^\?|\b&)autoscan\b/)) {
+            const autoscan_warning = document.getElementById("autoscan-warning");
+            const autoscan_ws_address = document.getElementById("autoscan-ws-address");
+            const autoscan_http_address = document.getElementById("autoscan-http-address");
+
+            autoscan_warning.hidden = false;
+            autoscan_ws_address.innerText = "ws://127.0.0.1:8080";
+            autoscan_http_address.innerText = "http://127.0.0.1:8080";
+
+            console.log("Running a single HTTP and WS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
+            const scanner = new PortScanner("127.0.0.1", 8080);
+            scanner.runHTTP();
+            scanner.runWS();
         }
 
         function custom_scan()
