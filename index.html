@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark">
     <title>All in One Port-Scan Test</title>
     <style>
-        /* Styles copied from `style-changes` branch of my Port Authority fork */
+        /* Color variables copied from my Port Authority `style-changes` branch */
         :root {
             --light: #ffffff;
             --dark: #23222B;
@@ -92,10 +92,11 @@
             outline: 8px solid oklch(from var(--red) calc(l + 0.1) c h);
             color: var(--foreground);
         }
+
         #plugin-button {
             display: block;
+            width: fit-content;
             margin: 0 auto;
-            text-align: center;
         }
 
         code, pre {
@@ -162,6 +163,7 @@
     <script>
         /* DOM nodes */
         const trigger_portscan_button = document.getElementById("custom_button");
+        const results_label = document.getElementById("results-label");
         const results_container = document.getElementById("results");
         const test_div = document.getElementById("testdiv");
 
@@ -292,8 +294,8 @@
 
             trigger_portscan_button.blur();
             trigger_portscan_button.disabled = true;
-            document.getElementById("results-label").hidden = false;
-
+            
+            results_label.hidden = false;
             results_container.innerText = "";
             results_container.hidden = false;
 
