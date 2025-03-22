@@ -162,12 +162,12 @@
     <script>
         /* DOM nodes */
         const trigger_portscan_button = document.getElementById("custom_button");
-        const res_pre = document.getElementById("results");
+        const results_container = document.getElementById("results");
         const test_div = document.getElementById("testdiv");
 
         /* DOM functionality binding */
         trigger_portscan_button.addEventListener("click", custom_scan);
-        const log_portscan = (url) => res_pre.append(url + "\n");
+        const log_portscan = (url) => results_container.append(url + "\n");
 
         class PortScanner {
             constructor(ip, port) {
@@ -294,8 +294,8 @@
             trigger_portscan_button.disabled = true;
             document.getElementById("results-label").hidden = false;
 
-            res_pre.innerText = "";
-            res_pre.hidden = false;
+            results_container.innerText = "";
+            results_container.hidden = false;
 
             for(const item of ips){
                 const [ip, port] = Object.entries(item)[0];
