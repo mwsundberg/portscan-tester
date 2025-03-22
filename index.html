@@ -278,6 +278,14 @@
             }
         }
 
+        /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the query parameters) */
+        if(window.location.search.match(/(^|\b)[&?]autoscan\b/)) {
+            console.log("Running a single HTTPS and WSS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
+            const scanner = new PortScanner("127.0.0.1");
+            scanner.runHTTPS();
+            scanner.runWSS();
+        }
+
         function custom_scan()
         {
             const ips = [{"127.0.0.1": 80}, {"127.0.0.1": 65535}, {"0.0.0.0": 80}, {"localhost.": 80}, {"localhost.": 8080}, {"localhost": 8080}, {"localhost": 8081}, {"localhost": 8082}, {"localhost": 8083}, {"localhost": 8084}, {"localhost": 8085}, {"LoCALhOst": 443}, {"10.0.0.1": 455}, {"10.255.22.33": 80}, {"192.168.1.1": 443}, {"192.168.1.255":6463}, {"172.17.100.155": 4444}, {"172.31.255.255": 8081}, {"172.031.33.33": 445}, {"169.254.1.0": 547}, {"169.254.1.0": 21}, {"169.254.1.0": 194}];
