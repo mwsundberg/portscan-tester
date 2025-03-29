@@ -181,7 +181,9 @@
                 can add the <a href="https://github.com/gorhill/uBlock/wiki/Dashboard:-Filter-lists#block-outsider-intrusion-into-lan" target="_blank">"Block Outsider Intrusion into LAN"</a> filter list.
             </p>
             <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
-                <img src="./plugin-cta-button.svg" onerror="this.src='https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg'" alt="Port Authority addon for Firefox" height="60px">
+                <img src="./plugin-cta-button.svg"
+                     onerror="this.src='https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg'; /* Fall back to a mozilla hosted image if the page is downloaded alone */"
+                     alt="Get the Port Authority addon for Firefox" height="60px">
             </a>
             <p>
                 Links to local resources currently trigger false positives in the Port Authority addon (see <a href="https://github.com/ACK-J/Port_Authority/issues/57" target="_blank">Issue #57</a>).
