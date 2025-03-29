@@ -144,12 +144,15 @@
         <header><h1>All-in-One Port Scan Test</h1></header>
         <main>
             <div id="autoscan-warning" hidden>
-                <h2>Auto-scan mode is enabled <a id="autoscan-disable-link">(disable)</a></h2> <!--link url dynamically populated-->
+                <h2>Auto-scan mode is enabled <a href="?">(disable)</a></h2>
                 <p>
                     Two scans are automatically run on page load,
                         a WebSocket scan targetting <code id="autoscan-ws-address"><!--Dynamically Populated--></code> and
                         a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
+                </p>
+                <p id="autoscan-non-local">
+                    For the options to configure a custom host or port to autoscan, <a href="" download="local-portscan-tester.html">download this page</a> and load it locally.
                 </p>
                 <div id="autoscan-local-only" hidden>
                     <p>
@@ -169,7 +172,7 @@
                 The handy button above will run a port-scan of your local network. It works by triggering HTTP <code>GET</code> requests via
                 a hidden image's <code>src</code> attribute. The port-scan results will <em>never</em> be uploaded to remote servers and will
                 never leave your computer. You can verify this and fully monitor the scan from the <a href="https://firefox-source-docs.mozilla.org/devtools-user/network_monitor/index.html" target="_blank">DevTools Network tab</a>,
-                or check on the list of the local domains scanned below.
+                or check on the list of the local domains scanned below. Alternatively, you can <a href="" download="local-portscan-tester.html">download this page</a> to run locally.
             </p>
             <p>
                 To protect against private network port-scans like these there are several options:
@@ -326,6 +329,7 @@
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
             const autoscan_local_only = document.getElementById("autoscan-local-only");
+            const autoscan_non_local = document.getElementById("autoscan-non-local");
 
             /* Show the warning that an automatic scan is going on */
             autoscan_warning.hidden = false;
@@ -337,6 +341,7 @@
             /* Read the URL's config *only* if loading from a local resource (`file:///` or hostnames `localhost` or `127.0.0.1` (port agnostic)) */
             if(this_page.protocol === "file:" || this_page.hostname === "localhost" || this_page.hostname === "127.0.0.1") {
                 autoscan_local_only.hidden = false;
+                autoscan_non_local.hidden = true;
 
                 /* Parse the config options (if provided), only using if valid */
                 if(this_page.searchParams.has("host")) {
@@ -362,12 +367,6 @@
             /* Update the UI with the scan target */
             autoscan_ws_address.innerText = `ws://${host}:${port}`;
             autoscan_http_address.innerText = `http://${host}:${port}`;
-
-            /* Clear the autoscan options from the search params to make the disable link */
-            this_page.searchParams.delete("autoscan");
-            this_page.searchParams.delete("host");
-            this_page.searchParams.delete("port");
-            autoscan_disable_link.href = this_page;
 
             /* Run the portscan */
             console.log("Running a single HTTP and WS scan automatically (to disable remove 'autoscan' from the URL query parameters)");
