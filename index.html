@@ -321,7 +321,7 @@
             autoscan_warning.hidden = false;
 
             /* Read the config options and update the UI with the scan target */
-            const host = this_page.searchParams.get("host") ?? "localhost";
+            const host = this_page.searchParams.get("host") ?? "localhost.";
             const port = this_page.searchParams.get("port") ?? "8080";
             autoscan_ws_address.innerText = `ws://${host}:${port}`;
             autoscan_http_address.innerText = `http://${host}:${port}`;
