@@ -253,7 +253,7 @@
                 this._portScanTemplater({protocol, host, port}, (url)=>{
                     /* Inject an image tag into the page that triggers the GET request */
                     const injected_image = document.createElement("img");
-                    injected_image.setAttribute("src", url);
+                    injected_image.setAttribute("src", url + "/favicon.ico"); // `favicon.ico` is a commonly available resource
                     test_div.append(injected_image);
 
                     /* Return the event emitter and cleanup function */
