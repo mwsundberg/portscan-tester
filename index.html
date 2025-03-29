@@ -355,6 +355,8 @@
                         console.warn(`Invalid custom port provided for autoscanning, falling back on default: '${port}'`);
                     }
                 }
+            } else if(this_page.searchParams.has("host") || this_page.searchParams.has("port")) {
+                console.warn("Configuring a custom host or port to autoscan is only available when running this page locally (ie from protocol `file:///` or origin `localhost` or `127.0.0.1` (port agnostic)).");
             }
 
             /* Update the UI with the scan target */
