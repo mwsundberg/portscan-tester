@@ -151,9 +151,18 @@
                         a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
                 </p>
-                <p>
-                    You can also pick a specific host and port to port-scan by setting <code>host=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
-                </p>
+                <div id="autoscan-local-only" hidden>
+                    <p>
+                        You can also pick a specific host and port to port-scan by setting <code>host=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
+                    </p>
+                    <p>
+                        Note specifying a custom host or port is only available when loading the page from a local source (<em>ie.</em>
+                            the protocol is <code>file:///</code> or
+                            the origin is   <code>localhost</code> or
+                                            <code>127.0.0.1</code>),
+                        to prevent misuse when hosting this page online.
+                    </p>
+                </div>
             </div>
             <button id="trigger-button">Port Scan My Internal Network!</button>
             <p>
@@ -316,13 +325,39 @@
             const autoscan_disable_link = document.getElementById("autoscan-disable-link");
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
+            const autoscan_local_only = document.getElementById("autoscan-local-only");
 
             /* Show the warning that an automatic scan is going on */
             autoscan_warning.hidden = false;
 
-            /* Read the config options and update the UI with the scan target */
-            const host = this_page.searchParams.get("host") ?? "localhost.";
-            const port = this_page.searchParams.get("port") ?? "8080";
+            /* Config defaults, currently using `localhost.` since uBlock Origin mishandles FQDNs */
+            let host = "localhost.";
+            let port = 8080;
+
+            /* Read the URL's config *only* if loading from a local resource (`file:///` or hostnames `localhost` or `127.0.0.1` (port agnostic)) */
+            if(this_page.protocol === "file:" || this_page.hostname === "localhost" || this_page.hostname === "127.0.0.1") {
+                autoscan_local_only.hidden = false;
+
+                /* Parse the config options (if provided), only using if valid */
+                if(this_page.searchParams.has("host")) {
+                    try {
+                        const _host = new URL("http://" + this_page.searchParams.get("host")).hostname;
+                        if (_host) host = _host;
+                    } catch {
+                        console.warn(`Invalid custom host provided for autoscanning, falling back on default: '${host}'`);
+                    }
+                }
+                if(this_page.searchParams.has("port")) {
+                    const _port = parseInt(this_page.searchParams.get("port"));
+                    if(_port && _port > 0 && _port <= 65535) {
+                        port = _port;
+                    } else {
+                        console.warn(`Invalid custom port provided for autoscanning, falling back on default: '${port}'`);
+                    }
+                }
+            }
+
+            /* Update the UI with the scan target */
             autoscan_ws_address.innerText = `ws://${host}:${port}`;
             autoscan_http_address.innerText = `http://${host}:${port}`;
 
