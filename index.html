@@ -141,7 +141,7 @@
 </head>
 <body>
     <section>
-        <header><h1>All-in-One Port Scan Test</h1></header>
+        <header><h1 id="page-title">All-in-One Port Scan Test</h1></header>
         <main>
             <div id="autoscan-warning" hidden>
                 <h2>Auto-scan mode is enabled <a href="?">(disable)</a></h2>
@@ -322,16 +322,31 @@
             }
         }
 
-        /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
         const this_page = new URL(window.location);
+        const this_page_is_local = this_page.protocol === "file:" || this_page.hostname === "localhost" || this_page.hostname === "127.0.0.1";
+
+        /* When the page is loaded locally, modify the title and enable the custom autoscan configuration options */
+        if(this_page_is_local) {
+            /* Toggle visibility of the autoscan local-only config options descriptors */
+            const autoscan_local_only = document.getElementById("autoscan-local-only");
+            const autoscan_non_local = document.getElementById("autoscan-non-local");
+            autoscan_local_only.hidden = false;
+            autoscan_non_local.hidden = true;
+
+            /* Update the page titles */
+            const page_title = document.getElementById("page-title");
+            document.title = "(Local) " + document.title;
+            page_title.innerText += " (Running Locally)";
+
+        }
+
+        /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
         if(this_page.searchParams.get("autoscan") !== null) {
             /* Autoscan DOM elements */
             const autoscan_warning = document.getElementById("autoscan-warning");
             const autoscan_disable_link = document.getElementById("autoscan-disable-link");
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
-            const autoscan_local_only = document.getElementById("autoscan-local-only");
-            const autoscan_non_local = document.getElementById("autoscan-non-local");
 
             /* Show the warning that an automatic scan is going on */
             autoscan_warning.hidden = false;
@@ -340,10 +355,8 @@
             let host = "localhost.";
             let port = 8080;
 
-            /* Read the URL's config *only* if loading from a local resource (`file:///` or hostnames `localhost` or `127.0.0.1` (port agnostic)) */
-            if(this_page.protocol === "file:" || this_page.hostname === "localhost" || this_page.hostname === "127.0.0.1") {
-                autoscan_local_only.hidden = false;
-                autoscan_non_local.hidden = true;
+            /* Read the URL's config *only* if loading locally */
+            if(this_page_is_local) {
 
                 /* Parse the config options (if provided), only using if valid */
                 if(this_page.searchParams.has("host")) {
