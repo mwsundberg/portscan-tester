@@ -152,7 +152,7 @@
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
                 </p>
                 <p id="autoscan-non-local">
-                    For the options to configure a custom host or port to autoscan, <a href="" download="local-portscan-tester.html">download this page</a> and load it locally.
+                    For the option to configure a custom host or port to autoscan, <a href="" download="local-portscan-tester.html">download this page</a> and load it locally.
                 </p>
                 <div id="autoscan-local-only" hidden>
                     <p>
@@ -341,10 +341,10 @@
         }
 
         /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
-        if(this_page.searchParams.get("autoscan") !== null) {
+        const autoscan = this_page.searchParams.has("autoscan");
+        if(autoscan) {
             /* Autoscan DOM elements */
             const autoscan_warning = document.getElementById("autoscan-warning");
-            const autoscan_disable_link = document.getElementById("autoscan-disable-link");
             const autoscan_ws_address = document.getElementById("autoscan-ws-address");
             const autoscan_http_address = document.getElementById("autoscan-http-address");
 
@@ -355,28 +355,28 @@
             let host = "localhost.";
             let port = 8080;
 
-            /* Read the URL's config *only* if loading locally */
+            /* Read the URL provided config options *only* if loading locally */
+            const config_host = this_page.searchParams.get("host");
+            const config_port = this_page.searchParams.get("port");
             if(this_page_is_local) {
-
-                /* Parse the config options (if provided), only using if valid */
-                if(this_page.searchParams.has("host")) {
+                if(config_host) {
                     try {
-                        const _host = new URL("http://" + this_page.searchParams.get("host")).hostname;
+                        const _host = new URL("http://" + config_host).hostname;
                         if (_host) host = _host;
                     } catch {
                         console.warn(`Invalid custom host provided for autoscanning, falling back on default: '${host}'`);
                     }
                 }
-                if(this_page.searchParams.has("port")) {
-                    const _port = parseInt(this_page.searchParams.get("port"));
+                if(config_port) {
+                    const _port = parseInt(config_port);
                     if(_port && _port > 0 && _port <= 65535) {
                         port = _port;
                     } else {
                         console.warn(`Invalid custom port provided for autoscanning, falling back on default: '${port}'`);
                     }
                 }
-            } else if(this_page.searchParams.has("host") || this_page.searchParams.has("port")) {
-                console.warn("Configuring a custom host or port to autoscan is only available when running this page locally (ie from protocol `file:///` or origin `localhost` or `127.0.0.1` (port agnostic)).");
+            } else if(config_host || config_port) {
+                console.warn("Autoscanning a custom host or port is only available when running this page locally (ie from protocol `file:///` or origin `localhost` or `127.0.0.1` (port agnostic)).");
             }
 
             /* Update the UI with the scan target */
