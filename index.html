@@ -137,6 +137,24 @@
             color: var(--red);
             text-decoration-color: var(--red);
         }
+
+        /* Hide/show elements based upon how the page is loaded */
+        /* Default assumption is non-local https, encoded here */
+        .show-local, .show-http, .show-file { display: none; }
+        .hide-local, .show-https { display: initial; }
+        /* Overrides based upon classes set in JS */
+        body.is-local {
+            .hide-local { display: none; }
+            .show-local { display: initial; }
+        }
+        body.is-http {
+            .show-https, .show-file { display: none; }
+            .show-http { display: initial; }
+        }
+        body.is-file {
+            .show-http, .show-https { display: none; }
+            .show-file { display: initial; }
+        }
     </style>
 </head>
 <body>
@@ -151,12 +169,12 @@
                         a HTTP scan targetting <code id="autoscan-http-address"><!--Dynamically Populated--></code>.
                     This mode exists to speed up debugging using this tool by removing the need to manually click the button each time.
                 </p>
-                <p id="autoscan-non-local">
-                    For the option to configure a custom host or port to autoscan, <a href="" download="local-portscan-tester.html">download this page</a> and load it locally.
+                <p class="hide-local">
+                    To configure a custom host or port to autoscan, <a href="" download="local-portscan-tester.html">download this page</a> and load it locally.
                 </p>
-                <div id="autoscan-local-only" hidden>
+                <div class="show-local">
                     <p>
-                        You can also pick a specific host and port to port-scan by setting <code>host=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
+                        You can also specify a host and port to port-scan by setting <code>host=X.X.X.X</code> and <code>port=YYYY</code> in the URL search parameters.
                     </p>
                     <p>
                         Note specifying a custom host or port is only available when loading the page from a local source (<em>ie.</em>
@@ -182,7 +200,7 @@
             </p>
             <a id="plugin-button" href="https://addons.mozilla.org/firefox/addon/port-authority/">
                 <img src="./plugin-cta-button.svg"
-                     onerror="this.src='https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg'; /* Fall back to a mozilla hosted image if the page is downloaded alone */"
+                     onerror="this.src='https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg'; /* Fall back to a mozilla hosted image when the page is downloaded */"
                      alt="Get the Port Authority addon for Firefox" height="60px">
             </a>
             <p>
@@ -327,18 +345,18 @@
 
         /* When the page is loaded locally, modify the title and enable the custom autoscan configuration options */
         if(this_page_is_local) {
-            /* Toggle visibility of the autoscan local-only config options descriptors */
-            const autoscan_local_only = document.getElementById("autoscan-local-only");
-            const autoscan_non_local = document.getElementById("autoscan-non-local");
-            autoscan_local_only.hidden = false;
-            autoscan_non_local.hidden = true;
+            /* Add a conditional display controller class to `<body>` */
+            document.body.classList.add("is-local");
 
             /* Update the page titles */
             const page_title = document.getElementById("page-title");
-            document.title = "(Local) " + document.title;
             page_title.innerText += " (Running Locally)";
-
+            document.title = "(Local) " + document.title;
         }
+
+        /* Add conditional display classes for the protocol used to load the page */
+        if(this_page.protocol === "http:") document.body.classList.add("is-http");
+        if(this_page.protocol === "file:") document.body.classList.add("is-file");
 
         /* Auto-triggered port-scan for debugging purposes (to activate add "autoscan" to the URL query parameters) */
         const autoscan = this_page.searchParams.has("autoscan");
